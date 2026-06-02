@@ -30,12 +30,11 @@ jobs:
         run: dotnet test -c Release --no-build --collect:"XPlat Code Coverage" --results-directory ./TestResults
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./TestResults
           fail_ci_if_error: false
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   publish:
     # Only publish when a version tag (v*) is pushed, and only after build-test passes.
