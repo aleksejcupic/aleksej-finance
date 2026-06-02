@@ -32,7 +32,6 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           directory: ./TestResults
           fail_ci_if_error: false
 
@@ -50,7 +49,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Pack
-        run: dotnet pack src/AleksejCupic.FinancialMath/AleksejCupic.FinancialMath.csproj -c Release -o ./artifacts
+        run: dotnet pack src/Aleksej.Finance/Aleksej.Finance.csproj -c Release -o ./artifacts
 
       - name: Push to NuGet.org
         # Pushes both the .nupkg and its .snupkg symbol package.

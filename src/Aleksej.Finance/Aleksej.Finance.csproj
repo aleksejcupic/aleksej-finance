@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!-- NuGet package metadata -->
+    <PackageId>Aleksej.Finance</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Aleksej Cupic</Authors>
+    <Description>
+      Comprehensive quantitative finance library with 180+ pure-math static methods and zero
+      external dependencies. Covers: options pricing (Black-Scholes, Garman-Kohlhagen, CRR
+      binomial tree, Longstaff-Schwartz Monte Carlo / LSM, exotic options, options on futures),
+      bond math (price, YTM, Macaulay/modified duration, convexity, DV01, yield curve
+      bootstrapping, mortgage amortisation), derivatives (interest rate swaps, forward rate
+      agreements, caps/floors/swaptions via Black's model, forward and futures pricing, Vasicek
+      and CIR short-rate models), credit risk (Merton structural model, CDS pricing via hazard
+      rates, distance to default), portfolio analytics (Markowitz mean-variance optimisation,
+      efficient frontier, risk parity, equity valuation multiples, fee calculations, performance
+      attribution via Brinson-Hood-Beebower, IRR, TWR, Modified Dietz), and risk metrics
+      (Sharpe, Sortino, Calmar, Treynor, Beta, Jensen's Alpha, VaR, CVaR, EWMA and GARCH
+      volatility models, tracking error, information ratio).
+    </Description>
+    <PackageTags>finance quantitative options bonds greeks black-scholes garman-kohlhagen binomial-tree monte-carlo lsm exotic-options barrier asian lookback futures forwards fra irs interest-rate-swap caps floors swaptions vasicek cir yield-curve bootstrap markowitz mean-variance efficient-frontier risk-parity kelly-criterion merton cds credit-default-swap var cvar sharpe sortino calmar treynor beta alpha ewma garch garch11 brinson attribution irr twr modified-dietz</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/aleksejcupic/aleksej-finance</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/aleksejcupic/aleksej-finance</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!-- Source Link + symbols: let consumers debug into this library -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Build-only dependencies; not propagated to consumers (PrivateAssets="all"). -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="PolySharp" Version="1.15.0" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>

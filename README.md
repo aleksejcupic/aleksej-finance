@@ -1,9 +1,9 @@
-# AleksejCupic.FinancialMath
+# Aleksej.Finance
 
-[![NuGet](https://img.shields.io/nuget/v/AleksejCupic.FinancialMath.svg)](https://www.nuget.org/packages/AleksejCupic.FinancialMath/)
-[![NuGet downloads](https://img.shields.io/nuget/dt/AleksejCupic.FinancialMath.svg)](https://www.nuget.org/packages/AleksejCupic.FinancialMath/)
-[![CI](https://github.com/aleksejcupic/financial-math/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksejcupic/financial-math/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/aleksejcupic/financial-math/branch/main/graph/badge.svg)](https://codecov.io/gh/aleksejcupic/financial-math)
+[![NuGet](https://img.shields.io/nuget/v/Aleksej.Finance.svg)](https://www.nuget.org/packages/Aleksej.Finance/)
+[![NuGet downloads](https://img.shields.io/nuget/dt/Aleksej.Finance.svg)](https://www.nuget.org/packages/Aleksej.Finance/)
+[![CI](https://github.com/aleksejcupic/aleksej-finance/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksejcupic/aleksej-finance/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/aleksejcupic/aleksej-finance/branch/main/graph/badge.svg)](https://codecov.io/gh/aleksejcupic/aleksej-finance)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 A comprehensive C# quantitative finance library with 180+ pure-math static methods and **zero external dependencies**. Every method is `public static` and takes explicit inputs — no state, no configuration, no side effects.
@@ -13,7 +13,7 @@ Built to back the [Excel Finance Add-In](https://github.com/aleksejcupic/excel-f
 ## Install
 
 ```bash
-dotnet add package AleksejCupic.FinancialMath
+dotnet add package Aleksej.Finance
 ```
 
 **Target framework:** .NET 6.0+
@@ -34,7 +34,7 @@ dotnet add package AleksejCupic.FinancialMath
 | `OptionsOnFutures` | Black (1976) model — call/put on futures, full Greeks, put-call parity, implied vol |
 
 ```csharp
-using AleksejCupic.FinancialMath.Options;
+using Aleksej.Finance.Options;
 
 double call  = BlackScholes.Call(s: 100, k: 100, t: 1, r: 0.05, sigma: 0.20);  // ≈ 10.45
 double delta = BlackScholes.Delta(100, 100, 1, 0.05, 0.20, isPut: false);        // ≈ 0.637
@@ -54,7 +54,7 @@ double futOpt = OptionsOnFutures.Call(f: 105, k: 100, t: 0.5, r: 0.05, sigma: 0.
 | `MortgageMath` | Payment formula, outstanding balance, full amortisation schedule, total interest paid, EAR/APR conversions |
 
 ```csharp
-using AleksejCupic.FinancialMath.Bonds;
+using Aleksej.Finance.Bonds;
 
 double price   = BondMath.Price(face: 1000, couponRate: 0.05, ytm: 0.05, years: 10); // = 1000
 double ytm     = BondMath.YieldToMaturity(950, 1000, 0.05, 10);
@@ -74,7 +74,7 @@ double payment = MortgageMath.Payment(principal: 500_000, annualRate: 0.065, yea
 | `ShortRateModels` | Vasicek: bond price/yield/long-run yield/bond option. CIR: bond price/yield/long-run yield. Term structure generation |
 
 ```csharp
-using AleksejCupic.FinancialMath.Derivatives;
+using Aleksej.Finance.Derivatives;
 
 double fwd  = ForwardFutures.FxForwardPrice(s: 1.10, r: 0.03, rf: 0.01, t: 1);   // ≈ 1.122
 double par  = InterestRateSwap.ParSwapRate(new[] { 0.5, 1.0, 1.5, 2.0 }, new[] { 0.028, 0.030, 0.031, 0.032 });
@@ -89,7 +89,7 @@ double vBond = ShortRateModels.VasicekBondPrice(r: 0.03, tau: 5, kappa: 0.15, th
 | `CreditDerivatives` | Merton model (equity value, debt value, default probability, distance to default, credit spread). CDS: survival probability, hazard rate from spread, fair CDS spread, CDS mark-to-market |
 
 ```csharp
-using AleksejCupic.FinancialMath.Credit;
+using Aleksej.Finance.Credit;
 
 double pd    = CreditDerivatives.MertonDefaultProbability(v: 100, d: 80, t: 1, r: 0.05, sigmaV: 0.25);
 double cdsS  = CreditDerivatives.CdsFairSpread(hazardRate: 0.02, r: 0.03, maturity: 5); // ≈ 120bps
@@ -106,7 +106,7 @@ double dd    = CreditDerivatives.DistanceToDefault(100, 80, 1, 0.05, 0.25);
 | `PerformanceAttribution` | Time-weighted return (TWR), Modified Dietz, IRR / money-weighted return (Newton-Raphson on NPV), NPV, Brinson-Hood-Beebower attribution (allocation, selection, interaction per sector and total) |
 
 ```csharp
-using AleksejCupic.FinancialMath.Portfolio;
+using Aleksej.Finance.Portfolio;
 
 double[] mu  = Markowitz.MeanReturns(returns);       // returns is double[T, n]
 double[,] cov = Markowitz.CovarianceMatrix(returns);
@@ -140,7 +140,7 @@ var (alloc, select, interact, active) = PerformanceAttribution.BhbAttribution(
 | `VolatilityModels` | EWMA volatility series (RiskMetrics, λ=0.94 default), latest EWMA estimate, GARCH(1,1) conditional variance series, long-run variance, N-day ahead GARCH forecast, rolling historical volatility, GARCH MLE parameter estimation |
 
 ```csharp
-using AleksejCupic.FinancialMath.Risk;
+using Aleksej.Finance.Risk;
 
 double sharpe  = RiskMetrics.SharpeRatio(daily, riskFreeRateAnnual: 0.05);
 double var95   = RiskMetrics.HistoricalVaR(daily, confidence: 0.95);
@@ -166,8 +166,8 @@ double gFcast  = VolatilityModels.GarchForecast(currentVariance: 0.0001, omega: 
 ## Build from Source
 
 ```bash
-git clone https://github.com/aleksejcupic/financial-math
-cd financial-math
+git clone https://github.com/aleksejcupic/aleksej-finance
+cd aleksej-finance
 dotnet build
 dotnet pack --configuration Release
 ```
