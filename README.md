@@ -16,7 +16,7 @@ Built to back the [Excel Finance Add-In](https://github.com/aleksejcupic/excel-f
 dotnet add package Aleksej.Finance
 ```
 
-**Target framework:** .NET 6.0+
+**Targets:** `netstandard2.0` and `net8.0` — works on .NET 8+, .NET Core 2.0+, and .NET Framework 4.6.1+.
 
 ---
 
