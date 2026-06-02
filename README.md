@@ -1,5 +1,11 @@
 # AleksejCupic.FinancialMath
 
+[![NuGet](https://img.shields.io/nuget/v/AleksejCupic.FinancialMath.svg)](https://www.nuget.org/packages/AleksejCupic.FinancialMath/)
+[![NuGet downloads](https://img.shields.io/nuget/dt/AleksejCupic.FinancialMath.svg)](https://www.nuget.org/packages/AleksejCupic.FinancialMath/)
+[![CI](https://github.com/aleksejcupic/financial-math/actions/workflows/ci.yml/badge.svg)](https://github.com/aleksejcupic/financial-math/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/aleksejcupic/financial-math/branch/main/graph/badge.svg)](https://codecov.io/gh/aleksejcupic/financial-math)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A comprehensive C# quantitative finance library with 180+ pure-math static methods and **zero external dependencies**. Every method is `public static` and takes explicit inputs — no state, no configuration, no side effects.
 
 Built to back the [Excel Finance Add-In](https://github.com/aleksejcupic/excel-finance-addin) and usable standalone in any .NET project.

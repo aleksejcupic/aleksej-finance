@@ -410,7 +410,7 @@ public static class Markowitz
     private static double[] Fill(int n, double val)
     {
         var r = new double[n];
-        Array.Fill(r, val);
+        for (int i = 0; i < n; i++) r[i] = val;
         return r;
     }
 

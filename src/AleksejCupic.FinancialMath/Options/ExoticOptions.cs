@@ -67,43 +67,7 @@ public static class ExoticOptions
         bool knockIn = false, bool isUp = false)
     {
         if (t <= 0) return Math.Max(s - k, 0);
-
-        double vanilla = BlackScholes.Call(s, k, t, r, sigma);
-
-        // Merton/Reiner-Rubinstein closed form for barrier calls
-        double mu    = (r - 0.5 * sigma * sigma) / (sigma * sigma);
-        double lam   = Math.Sqrt(mu * mu + 2 * r / (sigma * sigma));
-        double sqrtT = Math.Sqrt(t);
-        double x1    = Math.Log(s / k)  / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
-        double x2    = Math.Log(s / h)  / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
-        double y1    = Math.Log(h * h / (s * k)) / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
-        double y2    = Math.Log(h / s)  / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
-
-        double phi = isUp ? -1 : 1; // η: +1 for down barriers, -1 for up barriers
-
-        if (!isUp && h >= s) return knockIn ? vanilla : 0; // already breached
-        if (isUp  && h <= s) return knockIn ? vanilla : 0;
-
-        double A = s * N(phi * x1) - k * Math.Exp(-r * t) * N(phi * (x1 - sigma * sqrtT));
-        double B = s * N(phi * x2) - k * Math.Exp(-r * t) * N(phi * (x2 - sigma * sqrtT));
-        double C = s * Math.Pow(h / s, 2 * (mu + 1)) * N(-phi * y1)
-                 - k * Math.Exp(-r * t) * Math.Pow(h / s, 2 * mu) * N(-phi * (y1 - sigma * sqrtT));
-        double D = s * Math.Pow(h / s, 2 * (mu + 1)) * N(-phi * y2)
-                 - k * Math.Exp(-r * t) * Math.Pow(h / s, 2 * mu) * N(-phi * (y2 - sigma * sqrtT));
-
-        double koPrice, kiPrice;
-        if (!isUp) // down barrier
-        {
-            koPrice = h < k ? A - C : B - D;
-            kiPrice = h < k ? vanilla - (A - C) : vanilla - (B - D);
-        }
-        else // up barrier
-        {
-            koPrice = h > k ? A - B + C - D : 0;
-            kiPrice = h > k ? vanilla - (A - B + C - D) : vanilla;
-        }
-
-        return knockIn ? kiPrice : koPrice;
+        return BarrierPrice(s, k, h, t, r, sigma, phi: 1, eta: isUp ? -1 : 1, knockIn: knockIn);
     }
 
     /// <summary>
@@ -114,41 +78,67 @@ public static class ExoticOptions
         bool knockIn = false, bool isUp = false)
     {
         if (t <= 0) return Math.Max(k - s, 0);
+        return BarrierPrice(s, k, h, t, r, sigma, phi: -1, eta: isUp ? -1 : 1, knockIn: knockIn);
+    }
 
-        double vanilla = BlackScholes.Put(s, k, t, r, sigma);
+    // Reiner-Rubinstein (1991) / Haug standard barrier option formulas (no rebate, cost of carry = r).
+    // phi: +1 call / -1 put.  eta: +1 down barrier / -1 up barrier.
+    // Knock-in and knock-out prices are computed independently; they sum to the vanilla price.
+    private static double BarrierPrice(
+        double s, double k, double h, double t, double r, double sigma, int phi, int eta, bool knockIn)
+    {
+        bool isUp = eta < 0;
+        double vanilla = phi > 0 ? BlackScholes.Call(s, k, t, r, sigma) : BlackScholes.Put(s, k, t, r, sigma);
+
+        // Barrier already breached at inception.
+        if (!isUp && h >= s) return knockIn ? vanilla : 0.0; // down barrier at/above spot
+        if (isUp  && h <= s) return knockIn ? vanilla : 0.0; // up barrier at/below spot
 
         double mu    = (r - 0.5 * sigma * sigma) / (sigma * sigma);
         double sqrtT = Math.Sqrt(t);
-        double x1    = Math.Log(s / k)  / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
-        double x2    = Math.Log(s / h)  / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
-        double y1    = Math.Log(h * h / (s * k)) / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
-        double y2    = Math.Log(h / s)  / (sigma * sqrtT) + (1 + mu) * sigma * sqrtT;
+        double sig   = sigma * sqrtT;
+        double x1    = Math.Log(s / k) / sig + (1 + mu) * sig;
+        double x2    = Math.Log(s / h) / sig + (1 + mu) * sig;
+        double y1    = Math.Log(h * h / (s * k)) / sig + (1 + mu) * sig;
+        double y2    = Math.Log(h / s) / sig + (1 + mu) * sig;
+        double disc  = Math.Exp(-r * t);
+        double powP  = Math.Pow(h / s, 2 * (mu + 1));
+        double powM  = Math.Pow(h / s, 2 * mu);
 
-        double phi = isUp ? -1 : 1;
+        double A = phi * s * N(phi * x1) - phi * k * disc * N(phi * x1 - phi * sig);
+        double B = phi * s * N(phi * x2) - phi * k * disc * N(phi * x2 - phi * sig);
+        double C = phi * s * powP * N(eta * y1) - phi * k * disc * powM * N(eta * y1 - eta * sig);
+        double D = phi * s * powP * N(eta * y2) - phi * k * disc * powM * N(eta * y2 - eta * sig);
 
-        if (!isUp && h >= s) return knockIn ? vanilla : 0;
-        if (isUp  && h <= s) return knockIn ? vanilla : 0;
-
-        double A = -s * N(-phi * x1) + k * Math.Exp(-r * t) * N(-phi * (x1 - sigma * sqrtT));
-        double B = -s * N(-phi * x2) + k * Math.Exp(-r * t) * N(-phi * (x2 - sigma * sqrtT));
-        double C = -s * Math.Pow(h / s, 2 * (mu + 1)) * N(phi * y1)
-                 + k * Math.Exp(-r * t) * Math.Pow(h / s, 2 * mu) * N(phi * (y1 - sigma * sqrtT));
-        double D = -s * Math.Pow(h / s, 2 * (mu + 1)) * N(phi * y2)
-                 + k * Math.Exp(-r * t) * Math.Pow(h / s, 2 * mu) * N(phi * (y2 - sigma * sqrtT));
-
-        double koPrice, kiPrice;
+        double inPrice, outPrice;
         if (!isUp) // down barrier
         {
-            koPrice = h > k ? A - C : B - D;
-            kiPrice = h > k ? vanilla - (A - C) : vanilla - (B - D);
+            if (phi > 0) // call
+            {
+                if (k > h) { inPrice = C;            outPrice = A - C; }
+                else       { inPrice = A - B + D;    outPrice = B - D; }
+            }
+            else // put
+            {
+                if (k > h) { inPrice = B - C + D;    outPrice = A - B + C - D; }
+                else       { inPrice = A;            outPrice = 0.0; }
+            }
         }
         else // up barrier
         {
-            koPrice = h < k ? A - B + C - D : 0;
-            kiPrice = h < k ? vanilla - (A - B + C - D) : vanilla;
+            if (phi > 0) // call
+            {
+                if (k > h) { inPrice = A;            outPrice = 0.0; }
+                else       { inPrice = B - C + D;    outPrice = A - B + C - D; }
+            }
+            else // put
+            {
+                if (k > h) { inPrice = A - B + D;    outPrice = B - D; }
+                else       { inPrice = C;            outPrice = A - C; }
+            }
         }
 
-        return knockIn ? kiPrice : koPrice;
+        return knockIn ? inPrice : outPrice;
     }
 
     // ── Asian options (geometric) ─────────────────────────────────────────────
@@ -265,13 +255,14 @@ public static class ExoticOptions
     {
         if (t <= 0) return Math.Max(sMax - s, 0);
         double sqrtT = Math.Sqrt(t);
-        double b1    = (Math.Log(sMax / s) + (-r + 0.5 * sigma * sigma) * t) / (sigma * sqrtT);
-        double b2    = b1 + sigma * sqrtT;
-        double b3    = (Math.Log(sMax / s) + (r + 0.5 * sigma * sigma) * t) / (sigma * sqrtT);
+        // Mirror of LookbackCall (Conze-Viswanathan 1991), with sMin -> sMax.
+        double b1    = (Math.Log(s / sMax) + (r + 0.5 * sigma * sigma) * t) / (sigma * sqrtT);
+        double b2    = b1 - sigma * sqrtT;
+        double b3    = (Math.Log(s / sMax) + (-r + 0.5 * sigma * sigma) * t) / (sigma * sqrtT);
 
-        return sMax * Math.Exp(-r * t) * N(b2)
+        return sMax * Math.Exp(-r * t) * N(-b2)
              - s * N(-b1)
-             + s * sigma * sigma / (2 * r) * (N(b1) - Math.Exp(-r * t) * Math.Pow(sMax / s, 2 * r / (sigma * sigma)) * N(b3));
+             + s * sigma * sigma / (2 * r) * (N(b1) - Math.Exp(-r * t) * Math.Pow(s / sMax, -2 * r / (sigma * sigma)) * N(b3));
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────
@@ -295,10 +286,11 @@ public static class ExoticOptions
         const double a1 =  0.254829592, a2 = -0.284496736, a3 =  1.421413741;
         const double a4 = -1.453152027, a5 =  1.061405429, p  =  0.3275911;
         double sign = x < 0 ? -1 : 1;
-        x = Math.Abs(x);
+        // N(x) = 0.5 * (1 + erf(x / sqrt(2))); scale x so the A&S erf approximation gets x/sqrt(2).
+        x = Math.Abs(x) / Math.Sqrt(2.0);
         double t = 1.0 / (1.0 + p * x);
         double poly = t * (a1 + t * (a2 + t * (a3 + t * (a4 + t * a5))));
-        return 0.5 * (1.0 + sign * (1.0 - poly * Math.Exp(-x * x / 2)));
+        return 0.5 * (1.0 + sign * (1.0 - poly * Math.Exp(-x * x)));
     }
 
     private static double BoxMuller(Random rng)

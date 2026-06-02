@@ -83,17 +83,30 @@ public static class BinomialTree
 
     /// <summary>
     /// Gamma — second-order price sensitivity (d²V/dS²).
-    /// Computed from the two level-1 nodes and the root of the tree.
+    /// Computed from the three level-2 tree nodes (all at the same time slice), per Hull.
     /// </summary>
     public static double Gamma(
         double s, double k, double t, double r, double sigma,
         int steps = 200, bool isPut = false, bool isAmerican = false)
     {
         if (t <= 0) return 0;
-        var (vu, vd, su, sd) = Level1Nodes(s, k, t, r, sigma, steps, isPut, isAmerican);
-        double v0 = Price(s, k, t, r, sigma, steps, isPut, isAmerican);
-        double smid = (su + sd) / 2;
-        return ((vu - v0) / (su - smid) - (v0 - vd) / (smid - sd)) / ((su - sd) / 2);
+        if (steps < 2) throw new ArgumentOutOfRangeException(nameof(steps), "steps must be >= 2 for gamma");
+
+        double dt   = t / steps;
+        double u    = Math.Exp(sigma * Math.Sqrt(dt));
+        double d    = 1.0 / u;
+        double tRem = t - 2 * dt;
+        int    nRem = steps - 2;
+
+        // Three nodes at time 2*dt: S*u^2, S (= S*u*d), S*d^2.
+        double suu = s * u * u, sud = s, sdd = s * d * d;
+        double vuu = Price(suu, k, tRem, r, sigma, nRem, isPut, isAmerican);
+        double vud = Price(sud, k, tRem, r, sigma, nRem, isPut, isAmerican);
+        double vdd = Price(sdd, k, tRem, r, sigma, nRem, isPut, isAmerican);
+
+        double gammaUp   = (vuu - vud) / (suu - sud);
+        double gammaDown = (vud - vdd) / (sud - sdd);
+        return (gammaUp - gammaDown) / (0.5 * (suu - sdd));
     }
 
     // ── Internals ─────────────────────────────────────────────────────────────

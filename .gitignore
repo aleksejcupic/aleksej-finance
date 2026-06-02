@@ -3,3 +3,9 @@ obj/
 .vs/
 *.user
 .DS_Store
+
+# Build / test / pack output
+artifacts/
+[Tt]est[Rr]esults/
+*.nupkg
+*.snupkg
